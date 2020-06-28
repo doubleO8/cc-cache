@@ -103,7 +103,7 @@ if not (api_password and api_password):
             ('API_USERNAME', 'API_PASSWORD')))
 
 users = {
-    api_password: api_password
+    api_username: generate_password_hash(api_password)
 }
 
 @auth.verify_password
