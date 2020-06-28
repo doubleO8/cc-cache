@@ -30,6 +30,7 @@ from __future__ import absolute_import
 import os
 import logging
 import re
+import json
 
 from flask import Flask, abort
 import requests
@@ -204,7 +205,7 @@ def document_get_handler(db_name, item_id):
 
     try:
         try:
-            document = mc[item_id]
+            document = json.loads(mc[item_id])
             data['_dev']['source'] = "memcached"
             data['_dev']['cache_key'] = mc.cache_key(item_id)
         except KeyError:
@@ -259,7 +260,7 @@ def document_put_handler(db_name, item_id):
         abort(500)
 
     try:
-        mc[item_id] = dict(document)
+        mc[item_id] = json.dumps(dict(document))
         data['_dev']['cache_key'] = mc.cache_key(item_id)
     except Exception as exc:
         app.logger.error(exc)
