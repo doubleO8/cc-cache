@@ -31,5 +31,8 @@ setup(
         'Flask-Cors==3.0.7',
         'djali>=0.1.3',
         'pylibmc>=1.6.1',
+    ],
+    scripts=[
+        'cccache.py'
     ]
 )
