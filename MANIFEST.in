@@ -1,0 +1,2 @@
+include versioneer.py
+include cccache_core/_version.py

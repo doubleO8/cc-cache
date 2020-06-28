@@ -1,0 +1,17 @@
+.DS_Store
+._*
+*.py[cod]
+/.idea
+*~
+.sass-cache/
+*.css.map
+/cosh.json
+/dist
+/MANIFEST
+/scss
+/js
+/venv
+/venv3
+/*.egg-info
+
+/doc/build
