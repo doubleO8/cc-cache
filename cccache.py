@@ -146,6 +146,7 @@ def get_couch_controller_or_bust(db_name):
 
 
 @app.route('/<db_name>/<item_id>', methods=['GET'])
+@app.route('/f/<db_name>/<item_id>', methods=['GET'])
 def document_get_handler(db_name, item_id):
     """
     Retrieve dataset with given item ID from database.

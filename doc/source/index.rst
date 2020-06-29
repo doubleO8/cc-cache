@@ -68,7 +68,7 @@ Fetching a document currently in memory cache
 
 .. code:: bash
 
-    curl -u user:pass -X GET --noproxy localhost http://localhost:53722/cccache/argh
+    curl -u user:pass -X GET --noproxy localhost http://localhost:53722/c/cccache/argh
 
 .. code:: json
 
@@ -79,6 +79,11 @@ Fetching a document currently in memory cache
       "_rev": "1-1543fcacaf4f2c2cdca9d5ce0b9bb611",
       "version": "1.1.1+0.ga674dfa.dirty"
     }
+
+.. note::
+
+    Please note the ``c`` for **cached** prefix. This endpoint will deliver data from memcache only, there is no fallback, cache misses will result in HTTP status 404.
+    If you want fallback to storage backend retrieval use the endpoint sporting ``f`` for **fallback** prefix.
 
 Removing a document from the memory cache
 +++++++++++++++++++++++++++++++++++++++++
