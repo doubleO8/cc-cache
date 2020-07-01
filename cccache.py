@@ -32,7 +32,7 @@ import logging
 import re
 import json
 
-from flask import Flask, abort
+from flask import Flask, abort, request
 import requests
 from six.moves.urllib.parse import urlparse, ParseResult
 from coshed.vial import JINJA_FILTERS
@@ -82,6 +82,7 @@ CACHE_EXPIRATION_SECONDS = 3600
 #: Port number is required to fetch from env variable
 #: http://docs.cloudfoundry.org/devguide/deploy-apps/environment-variable.html#PORT
 cf_port = os.getenv("PORT")
+
 
 def valid_value_or_bust(item_id, regex=None):
     """
@@ -224,7 +225,7 @@ def document_put_handler(db_name, item_id):
         abort(404)
     except Exception as exc:
         app.logger.error(exc)
-        abort(500)
+        abort(503)
 
     try:
         mc[item_id] = json.dumps(dict(document))
@@ -250,9 +251,8 @@ def document_delete_handler(db_name, item_id):
     :param item_id: Document ID
 
     :statuscode 200: no error
+    :statuscode 400: Bad database name or document ID
     :statuscode 500: Server Error
-    :statuscode 502: Storage backend authentication error
-    :statuscode 503: Generic storage backend error
 
     """
     valid_value_or_bust(db_name, regex=PATTERN_VALID_ID)
@@ -267,6 +267,84 @@ def document_delete_handler(db_name, item_id):
     except Exception as exc:
         app.logger.error(exc)
         abort(500)
+
+
+@app.route('/<db_name>/<item_id>', methods=['POST'])
+def document_post_handler(db_name, item_id):
+    """
+    Add or replace dataset with given item ID to database and to the memory
+    cache.
+
+    .. warning::
+
+        Limited sanitisation only:
+
+            * only JSON encoded payload is accepted
+            * payload needs to be :py:func:`dict`
+            * CouchDB internal key/value pairs (``_id`` and ``_rev``) will be \
+              removed
+
+    .. code-block:: bash
+
+        curl --noproxy localhost -X POST -H "Content-Type: application/json" \
+        -d '{"test": 1234}' http://localhost:53723/cccache/haha_post
+
+    :param db_name: Database name
+    :param item_id: Document ID
+
+    :statuscode 200: no error
+    :statuscode 400: Bad database name or document ID
+    :statuscode 404: Document not in storage backend
+    :statuscode 500: Server Error
+    :statuscode 502: Storage backend authentication error
+    :statuscode 503: Generic storage backend error
+
+    """
+    valid_value_or_bust(db_name, regex=PATTERN_VALID_ID)
+    valid_value_or_bust(item_id, regex=REGEX_VALID_DOCUMENT_ID)
+    ctl = get_couch_controller_or_bust(db_name)
+    expiration_seconds = CACHE_EXPIRATION_SECONDS
+    mc = MemCacheControl(
+        key_prefix='{:s}_{:s}'.format(CACHE_PREFIX, db_name),
+        expiration_seconds=expiration_seconds
+    )
+    data = AppResponse(drop_dev=drop_dev())
+
+    if not request.is_json:
+        app.logger.error("No JSON POSTed!")
+        abort(400)
+
+    if request.json is None:
+        app.logger.error("Empty content POSTed!")
+        abort(400)
+
+    document = request.json
+    if not isinstance(document, dict):
+        app.logger.error("No dict POSTed!")
+        abort(400)
+
+    for del_key in ('_id', '_rev'):
+        try:
+            del document[del_key]
+        except KeyError:
+            pass
+
+    try:
+        ctl[item_id] = document
+    except Exception as exc:
+        app.logger.error(exc)
+        abort(503)
+
+    try:
+        mc[item_id] = json.dumps(document)
+        data['_dev']['cache_key'] = mc.cache_key(item_id)
+    except Exception as exc:
+        app.logger.error(exc)
+        abort(500)
+
+    data.update(document)
+
+    return data.flask_obj(not_to_be_exposed=not_to_be_exposed)
 
 
 if __name__ == '__main__':
