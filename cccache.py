@@ -177,9 +177,12 @@ def document_get_handler(db_name, item_id):
             document = json.loads(mc[item_id])
             data['_dev']['source'] = "memcached"
             data['_dev']['cache_key'] = mc.cache_key(item_id)
-        except (KeyError, TypeError):
+        except TypeError:
             document = ctl[item_id]
             data['_dev']['source'] = "couchdb"
+    except KeyError:
+        # document not even found in storage backend
+        pass
     except Exception as exc:
         app.logger.error(exc)
         abort(500)
