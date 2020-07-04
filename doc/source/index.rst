@@ -99,6 +99,21 @@ Removing a document from the memory cache
       "version": "1.1.1+0.ga674dfa.dirty"
     }
 
+Store document and add it to the memory cache
++++++++++++++++++++++++++++++++++++++++++++++
+
+.. code:: bash
+
+    curl -u user:pass -X POST -H "Content-Type: application/json" --noproxy localhost http://localhost:53722/cccache/brave_new_document -d '{"x": 123}'
+
+.. code:: json
+
+    {
+      "x": 123,
+      "version": "1.4.0"
+    }
+
+
 Indices and tables
 ==================
 
