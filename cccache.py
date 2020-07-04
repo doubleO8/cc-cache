@@ -177,7 +177,7 @@ def document_get_handler(db_name, item_id):
             document = json.loads(mc[item_id])
             data['_dev']['source'] = "memcached"
             data['_dev']['cache_key'] = mc.cache_key(item_id)
-        except KeyError:
+        except (KeyError, TypeError):
             document = ctl[item_id]
             data['_dev']['source'] = "couchdb"
     except Exception as exc:
