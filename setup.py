@@ -25,7 +25,7 @@ setup(
         'future==0.18.2',
         'coshed>=0.7.0',
         'six==1.13.0',
-        'Jinja2==2.10.3',
+        'Jinja2==2.11.3',
         'Flask==1.1.1',
         'Flask-Compress==1.4.0',
         'Flask-Cors==3.0.7',
