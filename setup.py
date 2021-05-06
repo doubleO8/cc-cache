@@ -28,7 +28,7 @@ setup(
         'Jinja2==2.10.3',
         'Flask==1.1.1',
         'Flask-Compress==1.4.0',
-        'Flask-Cors==3.0.7',
+        'Flask-Cors==3.0.9',
         'djali>=0.1.3',
         'pylibmc>=1.6.1',
     ],
